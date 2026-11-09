@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "doublejump",
+	"version": "${version}",
+	"name": "Enshrouded Style",
+	"description": "A squeeze of Enshrouded gameplay",
+	"authors": [
+		"Barton"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/doublejump/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"fr.barton.doublejump.DoubleJump"
+		],
+		"client": [
+			"fr.barton.doublejump.client.DoubleJumpClient"
+		]
+	},
+	"mixins": [
+		"doublejump.mixins.json",
+		{
+			"config": "doublejump.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
