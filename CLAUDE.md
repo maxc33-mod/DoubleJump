@@ -1,7 +1,7 @@
 # Mod DoubleJump (Fabric, Minecraft Java 26.3)
 
 ## Projet
-- Mod Fabric pour Minecraft Java **26.3** (Java 25, Fabric Loader 0.19.5+, Fabric API 0.161.0+26.3).
+- Mod Fabric pour Minecraft Java **26.3** (Java 25, Fabric Loader 0.20.1+, Fabric API 0.165.2+26.3).
 - Id du mod : `doublejump`. Package : `fr.barton.doublejump`.
 - Minecraft est non obfusqué : on utilise les noms officiels Mojang.
 - Sources séparées : `src/main` (commun/serveur) et `src/client` (client uniquement).
@@ -25,6 +25,10 @@
 
 ## Fichiers
 - `DoubleJump.java` (main) : ModInitializer, `id()`, annulation des dégâts de chute.
+- `zone/` (main) : `SafeZone` (position + niveau), `SafeZoneData` (zones d'une dimension, sauvegardées avec le monde), `SafeZoneActions` (boussole et quartz, vérifiés côté serveur), `SafeZoneSpawns` (règle d'apparition des monstres), `SafeZoneGuard` (disparition à la création ou à l'agrandissement, monstres repoussés dans la bande de 2 blocs à l'intérieur de la limite).
+- `network/SafeZoneNetwork.java` (main) : messages réseau des zones et synchronisation vers les clients.
+- `client/LodestoneScreen.java` : écran de la Magnétite. `client/zone/ClientSafeZones.java` : copie des zones côté client. `client/zone/SafeZoneHalo.java` : halo de particules.
+- `mixin/` (main) : `BlockItemMixin` (pose d'une Magnétite par un joueur), `LevelChunkMixin` (disparition d'une Magnétite), `ServerLevelMixin` (blocage des apparitions), `SpawnEggItemMixin` (œuf refusé sans être consommé), `SummonCommandMixin` (`/summon` autorisé).
 - `client/DoubleJumpClient.java` : point d'entrée client, double saut, touche de la carte, scan, sauvegarde à la fermeture.
 - `client/MapScreen.java`, `client/WaypointEditScreen.java` : écrans.
 - `client/map/` : `MapChunkData`, `WorldMapData`, `MapScanner`, `MapRenderer`, `MapKeys`, `MapStorage`.
@@ -46,13 +50,27 @@
 - Textures dynamiques : `new DynamicTexture(() -> "nom", nativeImage)`, `getTextureManager().register(id, texture)`, `texture.upload()`.
 - Noms 26.x : `ResourceKey.identifier()` (ancien `location()`), `level.getRespawnData().pos()` (ancien `getSharedSpawnPos()`).
 - `BlockState.blocksMotion()` n'est pas fiable : utiliser `getCollisionShape(level, pos).isEmpty()`.
+- Données de monde : `SavedDataType(id, constructeur, codec, dataFixTypes)` avec `level.getDataStorage().computeIfAbsent(TYPE)`. Le `DataFixTypes` ne doit jamais être null (utilisé sans vérification à la relecture du fichier).
+- Événement de chargement de dimension : `ServerLevelEvents.LOAD` (ancien `ServerWorldEvents`).
+- Réseau Fabric : `PayloadTypeRegistry.clientboundPlay()` / `serverboundPlay()` (anciens `playS2C` / `playC2S`). Changement de dimension : `ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL`.
+- `UseBlockCallback` côté client : renvoyer `FAIL` annule le clic sans rien envoyer au serveur.
+- Types d'entités : constantes dans `EntityTypes` (ex. `EntityTypes.ZOMBIFIED_PIGLIN`), et non plus dans `EntityType`.
+- Toute nouvelle entité passe par `ServerLevel.addFreshEntity` (apparitions naturelles, spawners, œufs, `/summon`).
+- Un écran qui envoie des demandes au serveur doit avoir `isPauseScreen()` à `false`, sinon le serveur solo est en pause.
 
-## Prochaine fonctionnalité (v2) : zones de sécurité autour de la Magnétite
+## Fonctionnalité de la v2 (terminée et testée) : zones de sécurité autour de la Magnétite
 La "Magnétite" est le nom français du bloc vanilla `minecraft:lodestone` (Lodestone).
-Idée : chaque Magnétite posée crée un cube de 51 blocs de côté où les monstres hostiles n'apparaissent pas et n'entrent pas.
-- Clic droit sur la Magnétite : écran avec deux choix (associer la boussole tenue en main / agrandir la zone avec du quartz).
-- Taille stockée côté serveur (données du monde, par position), synchronisée aux clients par messages réseau.
-- Halo bleu très clair en particules à proximité des faces du cube.
-- Les zones apparaissent sur la carte (cube bleu translucide).
-- Le mod devra être installé côté serveur ET côté client.
-  Les détails sont à valider avec l'utilisateur (voir ses réponses aux questions de cadrage).
+Chaque Magnétite posée par un joueur crée une safe zone : un cube centré sur le bloc, où les monstres hostiles n'apparaissent pas et n'entrent pas.
+Cahier des charges validé par l'utilisateur le 2026-11-09 :
+- **Quelles Magnétites :** uniquement celles posées par un joueur une fois le mod installé. Les autres gardent le comportement vanilla.
+- **Clic droit :** ouvre toujours l'écran, même boussole en main (remplace l'association directe). Shift + clic droit garde le comportement normal (ex. poser un bloc contre la Magnétite).
+- **Écran, deux choix :** associer la boussole tenue en main (bouton grisé si aucune) / agrandir la zone avec du quartz.
+- **Niveaux (côté du cube, identique en hauteur) :** niveau 1 = 51 (initial), niveau 2 = 101 (50 quartz du Nether), niveau 3 = 151 (100 quartz), niveau 4 = 201 (150 quartz). Le niveau 4 est le maximum.
+- **Plusieurs zones :** chaque Magnétite garde sa propre zone ; la surface protégée est la réunion des zones (une Magnétite posée dans une zone existante étend la protection).
+- **Monstres concernés :** les monstres toujours hostiles. Exclus : boss (Wither, Dragon) et neutres (Endermen, Piglins, Piglins zombifiés).
+- **Comportement :** les monstres qui entrent sont repoussés en bordure ; ceux déjà dedans disparaissent, sauf ceux nommés avec une étiquette. Apparitions naturelles, spawners et œufs de spawn bloqués ; les commandes ne le sont pas (pour les tests).
+- **Limite et accès :** pas de limite de zones ; n'importe quel joueur peut agrandir ou détruire une zone. L'agrandissement est gratuit en mode créatif. Une Magnétite détruite ne rend pas le quartz.
+- **Dimensions :** Overworld, Nether et End.
+- **Halo :** particules bleu très clair, visibles seulement à moins de ~10 blocs d'une face du cube.
+- **Carte :** cube bleu translucide avec une icône au centre.
+- **Technique :** niveau stocké côté serveur (données du monde, par dimension et position), synchronisé aux clients par messages réseau. Le mod doit être installé côté serveur ET côté client.

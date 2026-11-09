@@ -4,6 +4,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import fr.barton.doublejump.client.map.MapRenderer;
 import fr.barton.doublejump.client.map.WorldMapData;
 import fr.barton.doublejump.client.waypoint.Waypoint;
+import fr.barton.doublejump.client.zone.ClientSafeZones;
+import fr.barton.doublejump.zone.SafeZone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -15,6 +17,8 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
 public class MapScreen extends Screen {
@@ -25,8 +29,12 @@ public class MapScreen extends Screen {
     private static final int SPAWN_COLOR = 0xFF30C030;        // vert
     private static final int OTHER_PLAYER_COLOR = 0xFF30A0FF; // bleu clair
     private static final int WAYPOINT_HIT_RADIUS = 7;         // zone cliquable d'un waypoint, en pixels
+    private static final int ZONE_FILL_COLOR = 0x5540A0FF;    // bleu translucide
+    private static final int ZONE_BORDER_COLOR = 0xFF80D0FF;  // bleu clair opaque
+    private static final int ICON_HALF_SIZE = 8;              // moitié de la taille d'une icône d'objet
 
     private final MapRenderer mapRenderer = new MapRenderer();
+    private final ItemStack lodestoneIcon = new ItemStack(Items.LODESTONE);
 
     // Vue : coordonnées du monde au centre de l'écran, et pixels par bloc
     private double centerX = 0;
@@ -187,12 +195,38 @@ public class MapScreen extends Screen {
                 this.width, this.height,
                 this.width, this.height);
 
-        // Du plus "en dessous" au plus "au dessus" : waypoints, spawn, autres joueurs, moi
+        // Du plus "en dessous" au plus "au dessus" : zones, waypoints, spawn, autres joueurs, moi
+        drawSafeZones(graphics);
         drawWaypoints(graphics, mouseX, mouseY);
         drawSpawnMarker(graphics);
         drawOtherPlayers(graphics);
         drawPlayerMarker(graphics);
         drawInfo(graphics, data, mouseX, mouseY);
+    }
+
+    // Les safe zones de la dimension : un carré bleu translucide, avec la Magnétite au centre
+    private void drawSafeZones(GuiGraphicsExtractor graphics) {
+        // Les surfaces d'abord, pour qu'une zone voisine ne recouvre pas l'icône d'une autre
+        for (SafeZone zone : ClientSafeZones.zones()) {
+            int left = screenX(zone.pos().getX() - zone.radius());
+            int right = screenX(zone.pos().getX() + zone.radius() + 1);
+            int top = screenY(zone.pos().getZ() - zone.radius());
+            int bottom = screenY(zone.pos().getZ() + zone.radius() + 1);
+
+            // Hors de l'écran : inutile de dessiner
+            if (right < 0 || left > this.width || bottom < 0 || top > this.height) {
+                continue;
+            }
+
+            graphics.fill(left, top, right, bottom, ZONE_FILL_COLOR);
+            graphics.outline(left, top, right - left, bottom - top, ZONE_BORDER_COLOR);
+        }
+
+        for (SafeZone zone : ClientSafeZones.zones()) {
+            graphics.item(lodestoneIcon,
+                    screenX(zone.pos().getX() + 0.5) - ICON_HALF_SIZE,
+                    screenY(zone.pos().getZ() + 0.5) - ICON_HALF_SIZE);
+        }
     }
 
     // Dessine un losange de la couleur donnée, avec un contour blanc

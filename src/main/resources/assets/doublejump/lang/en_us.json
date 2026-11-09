@@ -23,5 +23,11 @@
   "screen.doublejump.waypoint.default_name": "Waypoint",
   "screen.doublejump.waypoint.save": "Save",
   "screen.doublejump.waypoint.cancel": "Cancel",
-  "screen.doublejump.waypoint.delete": "Delete"
+  "screen.doublejump.waypoint.delete": "Delete",
+  "screen.doublejump.lodestone": "Lodestone",
+  "screen.doublejump.lodestone.level": "Safe zone: level %s / %s (%s blocks wide)",
+  "screen.doublejump.lodestone.quartz": "Quartz in inventory: %s",
+  "screen.doublejump.lodestone.compass": "Link the compass in hand",
+  "screen.doublejump.lodestone.upgrade": "Upgrade: level %s (%s blocks) for %s quartz",
+  "screen.doublejump.lodestone.max": "Maximum level reached"
 }

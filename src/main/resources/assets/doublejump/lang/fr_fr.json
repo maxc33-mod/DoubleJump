@@ -23,5 +23,11 @@
   "screen.doublejump.waypoint.default_name": "Waypoint",
   "screen.doublejump.waypoint.save": "Enregistrer",
   "screen.doublejump.waypoint.cancel": "Annuler",
-  "screen.doublejump.waypoint.delete": "Supprimer"
+  "screen.doublejump.waypoint.delete": "Supprimer",
+  "screen.doublejump.lodestone": "Magnétite",
+  "screen.doublejump.lodestone.level": "Zone de sécurité : niveau %s / %s (%s blocs de côté)",
+  "screen.doublejump.lodestone.quartz": "Quartz dans l'inventaire : %s",
+  "screen.doublejump.lodestone.compass": "Associer la boussole tenue en main",
+  "screen.doublejump.lodestone.upgrade": "Agrandir : niveau %s (%s blocs) pour %s quartz",
+  "screen.doublejump.lodestone.max": "Niveau maximum atteint"
 }

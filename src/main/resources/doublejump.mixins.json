@@ -3,7 +3,12 @@
 	"package": "fr.barton.doublejump.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
-		"ExampleMixin"
+		"BlockItemMixin",
+		"ExampleMixin",
+		"LevelChunkMixin",
+		"ServerLevelMixin",
+		"SpawnEggItemMixin",
+		"SummonCommandMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -5,15 +5,28 @@ import fr.barton.doublejump.DoubleJump;
 import fr.barton.doublejump.client.map.MapScanner;
 import fr.barton.doublejump.client.map.MapStorage;
 import fr.barton.doublejump.client.waypoint.WaypointManager;
+import fr.barton.doublejump.client.zone.ClientSafeZones;
+import fr.barton.doublejump.client.zone.SafeZoneHalo;
+import fr.barton.doublejump.network.SafeZoneNetwork;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class DoubleJumpClient implements ClientModInitializer {
@@ -63,11 +76,35 @@ public class DoubleJumpClient implements ClientModInitializer {
 			SCANNER.saveIfNeeded();
 			MapStorage.finishAndStop();
 		});
+
+		// 5. Les safe zones : réception des zones envoyées par le serveur, oubli à la déconnexion
+		ClientPlayNetworking.registerGlobalReceiver(SafeZoneNetwork.SyncPayload.TYPE,
+				(payload, context) -> ClientSafeZones.replaceAll(payload.zones()));
+		ClientPlayConnectionEvents.DISCONNECT.register((listener, client) -> ClientSafeZones.clear());
+
+		// 6. Clic droit sur une Magnétite qui possède une zone : ouverture de l'écran
+		UseBlockCallback.EVENT.register(this::onUseBlock);
+	}
+
+	private InteractionResult onUseBlock(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
+		// Avec Shift (ou côté serveur), on laisse le comportement normal du jeu.
+		if (!level.isClientSide() || player.isSecondaryUseActive()) {
+			return InteractionResult.PASS;
+		}
+
+		BlockPos pos = hit.getBlockPos();
+		if (level.getBlockState(pos).is(Blocks.LODESTONE) && ClientSafeZones.get(pos) != null) {
+			Minecraft.getInstance().gui.setScreen(new LodestoneScreen(pos));
+			// FAIL : rien n'est envoyé au serveur, donc pas d'association directe de la boussole.
+			return InteractionResult.FAIL;
+		}
+		return InteractionResult.PASS;
 	}
 
 	private void onTick(Minecraft client) {
 		doubleJumpTick(client);
 		mapTick(client);
+		SafeZoneHalo.tick(client);
 	}
 
 	private void mapTick(Minecraft client) {
