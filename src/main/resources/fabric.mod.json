@@ -2,14 +2,15 @@
 	"schemaVersion": 1,
 	"id": "doublejump",
 	"version": "${version}",
-	"name": "Enshrouded Style",
-	"description": "A squeeze of Enshrouded gameplay",
+	"name": "DoubleJump",
+	"description": "Double jump, no fall damage, a full-screen world map with waypoints, Lodestone safe zones and teleportation, the Stroke of Genius sword enchantment and a hang glider.",
 	"authors": [
 		"Barton"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/maxc33-mod/DoubleJump",
+		"sources": "https://github.com/maxc33-mod/DoubleJump",
+		"issues": "https://github.com/maxc33-mod/DoubleJump/issues"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/doublejump/icon.png",
