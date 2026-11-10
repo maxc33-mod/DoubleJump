@@ -1,5 +1,6 @@
 package fr.barton.doublejump;
 
+import fr.barton.doublejump.network.GeniusBoltNetwork;
 import fr.barton.doublejump.network.SafeZoneNetwork;
 import fr.barton.doublejump.zone.SafeZoneData;
 import fr.barton.doublejump.zone.SafeZoneGuard;
@@ -28,6 +29,9 @@ public class DoubleJump implements ModInitializer {
 
 		// Les messages réseau des safe zones
 		SafeZoneNetwork.register();
+
+		// L'enchantement "Éclair de génie" : message réseau et vol des éclairs
+		GeniusBoltNetwork.register();
 
 		// Au chargement de chaque dimension, on indique combien de safe zones ont été retrouvées.
 		ServerLevelEvents.LOAD.register((server, level) -> {

@@ -31,6 +31,8 @@
 - `mixin/` (main) : `BlockItemMixin` (pose d'une Magnétite par un joueur), `LevelChunkMixin` (disparition d'une Magnétite), `ServerLevelMixin` (blocage des apparitions), `SpawnEggItemMixin` (œuf refusé sans être consommé), `SummonCommandMixin` (`/summon` autorisé).
 - `client/DoubleJumpClient.java` : point d'entrée client, double saut, touche de la carte, scan, sauvegarde à la fermeture.
 - `client/MapScreen.java`, `client/WaypointEditScreen.java` : écrans.
+- `genius/` (main) : `GeniusEnchantment` (clé de l'enchantement, test sur une épée), `GeniusBolt` (un éclair en vol, simulé côté serveur sans entité), `GeniusBolts` (lancers vérifiés, éclairs actifs). `network/GeniusBoltNetwork.java` : message de lancer. `client/genius/GeniusBoltInput.java` : détection du coup d'épée chargé.
+- Données : `data/doublejump/enchantment/stroke_of_genius.json`, tags `data/minecraft/tags/enchantment/` (`treasure`, `tradeable`, `on_random_loot`).
 - `client/map/` : `MapChunkData`, `WorldMapData`, `MapScanner`, `MapRenderer`, `MapKeys`, `MapStorage`.
 - `client/waypoint/` : `Waypoint`, `WaypointStorage`, `WaypointManager`.
 - Traductions : `src/main/resources/assets/doublejump/lang/` (`fr_fr.json`, `en_us.json`).
@@ -83,3 +85,15 @@ Cahier des charges validé par l'utilisateur le 2026-11-10 :
 - Même dimension uniquement.
 - Arrivée : case sûre à côté de la Magnétite (8 cases autour, puis un cran plus loin, hauteurs -2 à +2), sinon sur la Magnétite. Message si aucune place.
 - Technique : `SafeZoneNetwork.TeleportPayload` (client vers serveur), `SafeZoneActions.teleport` (vérifications + `player.teleportTo(x, y, z)`).
+
+## Fonctionnalité de la v4 (terminée et testée) : enchantement « Éclair de génie » (Stroke of Genius)
+Cahier des charges validé par l'utilisateur le 2026-11-10 :
+- Épées uniquement, un seul niveau, compatible avec tous les enchantements d'épée.
+- À chaque coup (même dans le vide), si la barre d'attaque est chargée à plus de 90 % : un petit éclair part en ligne droite depuis les yeux du joueur. Pas de tir quand on vise un bloc (on creuse).
+- Vitesse 3 blocs/tick, portée 20 blocs, s'arrête au premier mob touché, disparaît contre un bloc sans rien casser.
+- Dégâts : dégâts de base de l'épée + Tranchant/Châtiment/Fléau des arthropodes, sans critique ni potion de Force.
+- Cibles : tout ce qu'une épée peut toucher sauf le lanceur ; joueurs seulement si le PvP est permis. Le mob frappé au corps à corps par le même coup est ignoré par l'éclair (pas de double dégât).
+- Pas de recul de base, mais l'enchantement Recul s'applique. Aura de feu s'applique. 1 point d'usure quand l'éclair touche.
+- Apparence : traînée d'étincelles électriques (`ELECTRIC_SPARK`), balayage (`SWEEP_ATTACK`) à l'impact. Son : `TRIDENT_THUNDER` (Canalisation) au lancer et à l'impact.
+- Obtention : livres dans les coffres et chez les bibliothécaires, pas à la table d'enchantement (comme Raccommodage).
+- Particularités 26.3 : `ClientPreAttackCallback` (clic d'attaque, `clickCount > 0`), `LivingEntity.knockback(force, x, z, source, dégâts)`, `EnchantmentHelper.modifyDamage/modifyKnockback/doPostAttackEffectsWithItemSource`, `ItemAttributeModifiers.compute(attribut, base, slot)`.

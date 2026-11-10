@@ -2,6 +2,7 @@ package fr.barton.doublejump.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import fr.barton.doublejump.DoubleJump;
+import fr.barton.doublejump.client.genius.GeniusBoltInput;
 import fr.barton.doublejump.client.map.MapScanner;
 import fr.barton.doublejump.client.map.MapStorage;
 import fr.barton.doublejump.client.waypoint.WaypointManager;
@@ -84,6 +85,9 @@ public class DoubleJumpClient implements ClientModInitializer {
 
 		// 6. Clic droit sur une Magnétite qui possède une zone : ouverture de l'écran
 		UseBlockCallback.EVENT.register(this::onUseBlock);
+
+		// 7. Éclair de génie : chaque coup d'épée chargé demande un éclair au serveur
+		GeniusBoltInput.register();
 	}
 
 	private InteractionResult onUseBlock(Player player, Level level, InteractionHand hand, BlockHitResult hit) {

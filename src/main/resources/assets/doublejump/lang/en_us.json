@@ -35,5 +35,6 @@
   "screen.doublejump.teleport.go": "Teleport",
   "screen.doublejump.teleport.not_in_zone": "You must be inside a safe zone to teleport",
   "message.doublejump.teleport.not_in_zone": "You must be inside a safe zone to teleport.",
-  "message.doublejump.teleport.no_space": "No free space next to this Lodestone."
+  "message.doublejump.teleport.no_space": "No free space next to this Lodestone.",
+  "enchantment.doublejump.stroke_of_genius": "Stroke of Genius"
 }
