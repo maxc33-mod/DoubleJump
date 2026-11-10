@@ -36,5 +36,6 @@
   "screen.doublejump.teleport.not_in_zone": "Tu dois être dans une zone de sécurité pour te téléporter",
   "message.doublejump.teleport.not_in_zone": "Tu dois être dans une zone de sécurité pour te téléporter.",
   "message.doublejump.teleport.no_space": "Pas de place libre à côté de cette Magnétite.",
-  "enchantment.doublejump.stroke_of_genius": "Éclair de génie"
+  "enchantment.doublejump.stroke_of_genius": "Éclair de génie",
+  "item.doublejump.glider": "Planeur"
 }

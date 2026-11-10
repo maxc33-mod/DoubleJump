@@ -3,6 +3,11 @@ package fr.barton.doublejump.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import fr.barton.doublejump.DoubleJump;
 import fr.barton.doublejump.client.genius.GeniusBoltInput;
+import fr.barton.doublejump.client.glider.GliderFlight;
+import fr.barton.doublejump.client.glider.GliderPlayers;
+import fr.barton.doublejump.client.glider.GliderSailLayer;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import fr.barton.doublejump.client.map.MapScanner;
 import fr.barton.doublejump.client.map.MapStorage;
 import fr.barton.doublejump.client.waypoint.WaypointManager;
@@ -88,6 +93,14 @@ public class DoubleJumpClient implements ClientModInitializer {
 
 		// 7. Éclair de génie : chaque coup d'épée chargé demande un éclair au serveur
 		GeniusBoltInput.register();
+
+		// 8. Planeur : qui plane, et la toile dessinée au-dessus des joueurs en vol
+		GliderPlayers.register();
+		LivingEntityRenderLayerRegistrationCallback.EVENT.register((entityType, renderer, helper, context) -> {
+			if (renderer instanceof AvatarRenderer<?> avatarRenderer) {
+				helper.register(new GliderSailLayer(avatarRenderer, context.getBlockModelResolver()));
+			}
+		});
 	}
 
 	private InteractionResult onUseBlock(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
@@ -107,6 +120,7 @@ public class DoubleJumpClient implements ClientModInitializer {
 
 	private void onTick(Minecraft client) {
 		doubleJumpTick(client);
+		GliderFlight.tick(client); // juste après le double saut, qui peut lancer le vol
 		mapTick(client);
 		SafeZoneHalo.tick(client);
 	}
@@ -151,6 +165,7 @@ public class DoubleJumpClient implements ClientModInitializer {
 			player.setDeltaMovement(motion.x, JUMP_STRENGTH, motion.z);
 			player.resetFallDistance();
 			extraJumpsUsed++;
+			GliderFlight.onDoubleJump(player); // avec le planeur en main, le vol commence
 		}
 
 		jumpWasDown = jumpDown;

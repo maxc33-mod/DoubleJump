@@ -3,7 +3,10 @@
 	"package": "fr.barton.doublejump.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
-		"ExampleClientMixin"
+		"AvatarRendererMixin",
+		"ExampleClientMixin",
+		"FirstPersonHandsMixin",
+		"PlayerModelMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

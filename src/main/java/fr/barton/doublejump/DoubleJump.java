@@ -1,6 +1,8 @@
 package fr.barton.doublejump;
 
+import fr.barton.doublejump.item.ModItems;
 import fr.barton.doublejump.network.GeniusBoltNetwork;
+import fr.barton.doublejump.network.GliderNetwork;
 import fr.barton.doublejump.network.SafeZoneNetwork;
 import fr.barton.doublejump.zone.SafeZoneData;
 import fr.barton.doublejump.zone.SafeZoneGuard;
@@ -32,6 +34,10 @@ public class DoubleJump implements ModInitializer {
 
 		// L'enchantement "Éclair de génie" : message réseau et vol des éclairs
 		GeniusBoltNetwork.register();
+
+		// Les objets du mod (le planeur)
+		ModItems.register();
+		GliderNetwork.register(); // qui plane ? (pour dessiner la toile chez les autres joueurs)
 
 		// Au chargement de chaque dimension, on indique combien de safe zones ont été retrouvées.
 		ServerLevelEvents.LOAD.register((server, level) -> {

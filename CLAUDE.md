@@ -32,6 +32,7 @@
 - `client/DoubleJumpClient.java` : point d'entrée client, double saut, touche de la carte, scan, sauvegarde à la fermeture.
 - `client/MapScreen.java`, `client/WaypointEditScreen.java` : écrans.
 - `genius/` (main) : `GeniusEnchantment` (clé de l'enchantement, test sur une épée), `GeniusBolt` (un éclair en vol, simulé côté serveur sans entité), `GeniusBolts` (lancers vérifiés, éclairs actifs). `network/GeniusBoltNetwork.java` : message de lancer. `client/genius/GeniusBoltInput.java` : détection du coup d'épée chargé.
+- `item/ModItems.java` (main) : objet Planeur (`doublejump:glider`). `client/glider/` : `GliderFlight` (vol, côté client), `GliderSound` (son du vent), `GliderPlayers` (qui plane), `GliderSailLayer` (toile dessinée au-dessus du joueur). `network/GliderNetwork.java` : état « je plane » relayé aux autres joueurs.
 - Données : `data/doublejump/enchantment/stroke_of_genius.json`, tags `data/minecraft/tags/enchantment/` (`treasure`, `tradeable`, `on_random_loot`).
 - `client/map/` : `MapChunkData`, `WorldMapData`, `MapScanner`, `MapRenderer`, `MapKeys`, `MapStorage`.
 - `client/waypoint/` : `Waypoint`, `WaypointStorage`, `WaypointManager`.
@@ -97,3 +98,18 @@ Cahier des charges validé par l'utilisateur le 2026-11-10 :
 - Apparence : traînée d'étincelles électriques (`ELECTRIC_SPARK`), balayage (`SWEEP_ATTACK`) à l'impact. Son : `TRIDENT_THUNDER` (Canalisation) au lancer et à l'impact.
 - Obtention : livres dans les coffres et chez les bibliothécaires, pas à la table d'enchantement (comme Raccommodage).
 - Particularités 26.3 : `ClientPreAttackCallback` (clic d'attaque, `clickCount > 0`), `LivingEntity.knockback(force, x, z, source, dégâts)`, `EnchantmentHelper.modifyDamage/modifyKnockback/doPostAttackEffectsWithItemSource`, `ItemAttributeModifiers.compute(attribut, base, slot)`.
+
+## Fonctionnalité de la v5 (terminée et testée) : le Planeur (Glider)
+Cahier des charges validé par l'utilisateur le 2026-11-10 :
+- Recette (forme fixe) : ligne 1 `papier papier papier`, ligne 2 `fil redstone fil`, ligne 3 `bâton (vide) bâton`. Éternel (pas d'usure), 1 par case. Icône : texture de la membrane de phantom. Recette débloquée dans le livre de recettes dès qu'on a du papier ou de la redstone (`data/doublejump/advancement/recipes/tools/glider.json`).
+- Équipé = tenu dans la main (barre d'action).
+- Lancement : double saut avec le planeur en main (l'élan du double saut est gardé). Sélectionner le planeur pendant une chute lance le vol automatiquement (à chaque fois). Sans planeur, double saut inchangé.
+- En vol : on avance vers où l'on regarde (8 blocs/s), descente 1 bloc/s ; Q/D (touches gauche/droite des options) = glisser sur le côté ; S (touche reculer) = piqué à 5 blocs/s. Z et Maj sans effet.
+- Fin du vol : sol, eau, lave, échelle/lianes, planeur désélectionné (on tombe). Contre un mur, on reste en vol.
+- Son du vent (élytres, plus doux) pendant le vol.
+- Étape 2 : en vol, le joueur est couché à plat ventre sous un deltaplane : toile en triangle isocèle (pointe vers l'avant, 3 blocs de large à l'arrière x 2 de long, 16 bandes de laine blanche), trapèze en fer (2 montants + barre de contrôle tenue bras tendus), sangle en laine noire du dos à la toile. Seulement pendant le vol, en vue 3e personne et pour les autres joueurs.
+- Pose en vol (3e personne) : corps couché, bras tendus vers la barre, jambes droites, tête relevée, objets en main cachés. En 1re personne : mains et objets cachés pendant le vol.
+- Mixins client : `PlayerModelMixin` (pose, fin de `setupAnim`), `AvatarRendererMixin` (objets en main cachés, fin de `extractRenderState` ; corps couché, fin de `setupRotations`), `FirstPersonHandsMixin` (annule `FirstPersonHandsAndItemsRenderer.submitHandsWithItems`).
+- Rendu 26.3 : couche ajoutée via `LivingEntityRenderLayerRegistrationCallback` sur `AvatarRenderer` ; `RenderLayer.submit(poseStack, SubmitNodeCollector, light, AvatarRenderState, yRot, xRot)` ; bloc dessiné avec `BlockModelResolver.update(BlockModelRenderState, état, BlockDisplayContext)` puis `.submit(...)`. `AvatarRenderState.id` = numéro d'entité. Dans une couche, l'axe Y est inversé (négatif = vers le haut, 0 = épaules).
+- Noms 26.3 : tapis et laines rangés par couleur (`Blocks.CARPET.white()`), `CreativeModeTabEvents.modifyOutputEvent(...)`, `EntityTrackingEvents.START_TRACKING/STOP_TRACKING`. Sources de Minecraft lisibles : `./gradlew genSources`.
+- La descente doit rester > 0.03125 bloc/tick, sinon un serveur multijoueur peut expulser le joueur pour vol.
