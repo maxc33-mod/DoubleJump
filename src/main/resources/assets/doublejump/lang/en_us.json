@@ -29,5 +29,11 @@
   "screen.doublejump.lodestone.quartz": "Quartz in inventory: %s",
   "screen.doublejump.lodestone.compass": "Link the compass in hand",
   "screen.doublejump.lodestone.upgrade": "Upgrade: level %s (%s blocks) for %s quartz",
-  "screen.doublejump.lodestone.max": "Maximum level reached"
+  "screen.doublejump.lodestone.max": "Maximum level reached",
+  "screen.doublejump.map.hint3": "Left-click a Lodestone: teleport",
+  "screen.doublejump.teleport": "Teleport to Lodestone",
+  "screen.doublejump.teleport.go": "Teleport",
+  "screen.doublejump.teleport.not_in_zone": "You must be inside a safe zone to teleport",
+  "message.doublejump.teleport.not_in_zone": "You must be inside a safe zone to teleport.",
+  "message.doublejump.teleport.no_space": "No free space next to this Lodestone."
 }

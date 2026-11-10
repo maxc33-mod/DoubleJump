@@ -27,7 +27,7 @@
 - `DoubleJump.java` (main) : ModInitializer, `id()`, annulation des dégâts de chute.
 - `zone/` (main) : `SafeZone` (position + niveau), `SafeZoneData` (zones d'une dimension, sauvegardées avec le monde), `SafeZoneActions` (boussole et quartz, vérifiés côté serveur), `SafeZoneSpawns` (règle d'apparition des monstres), `SafeZoneGuard` (disparition à la création ou à l'agrandissement, monstres repoussés dans la bande de 2 blocs à l'intérieur de la limite).
 - `network/SafeZoneNetwork.java` (main) : messages réseau des zones et synchronisation vers les clients.
-- `client/LodestoneScreen.java` : écran de la Magnétite. `client/zone/ClientSafeZones.java` : copie des zones côté client. `client/zone/SafeZoneHalo.java` : halo de particules.
+- `client/LodestoneScreen.java` : écran de la Magnétite. `client/TeleportScreen.java` : écran de téléportation ouvert depuis la carte. `client/zone/ClientSafeZones.java` : copie des zones côté client. `client/zone/SafeZoneHalo.java` : halo de particules.
 - `mixin/` (main) : `BlockItemMixin` (pose d'une Magnétite par un joueur), `LevelChunkMixin` (disparition d'une Magnétite), `ServerLevelMixin` (blocage des apparitions), `SpawnEggItemMixin` (œuf refusé sans être consommé), `SummonCommandMixin` (`/summon` autorisé).
 - `client/DoubleJumpClient.java` : point d'entrée client, double saut, touche de la carte, scan, sauvegarde à la fermeture.
 - `client/MapScreen.java`, `client/WaypointEditScreen.java` : écrans.
@@ -74,3 +74,12 @@ Cahier des charges validé par l'utilisateur le 2026-11-09 :
 - **Halo :** particules bleu très clair, visibles seulement à moins de ~10 blocs d'une face du cube.
 - **Carte :** cube bleu translucide avec une icône au centre.
 - **Technique :** niveau stocké côté serveur (données du monde, par dimension et position), synchronisé aux clients par messages réseau. Le mod doit être installé côté serveur ET côté client.
+
+## Fonctionnalité de la v3 (terminée et testée) : téléportation vers une Magnétite
+Cahier des charges validé par l'utilisateur le 2026-11-10 :
+- Dans la carte, clic gauche sur l'icône d'une Magnétite : écran avec un bouton « Se téléporter » et un bouton « Annuler ».
+- Gratuit, sans délai de recharge, pour tous les joueurs et toutes les Magnétites.
+- Départ autorisé uniquement depuis l'intérieur d'une safe zone (n'importe laquelle). Bouton grisé sinon (et vérifié côté serveur).
+- Même dimension uniquement.
+- Arrivée : case sûre à côté de la Magnétite (8 cases autour, puis un cran plus loin, hauteurs -2 à +2), sinon sur la Magnétite. Message si aucune place.
+- Technique : `SafeZoneNetwork.TeleportPayload` (client vers serveur), `SafeZoneActions.teleport` (vérifications + `player.teleportTo(x, y, z)`).

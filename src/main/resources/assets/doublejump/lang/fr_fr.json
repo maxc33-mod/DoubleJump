@@ -29,5 +29,11 @@
   "screen.doublejump.lodestone.quartz": "Quartz dans l'inventaire : %s",
   "screen.doublejump.lodestone.compass": "Associer la boussole tenue en main",
   "screen.doublejump.lodestone.upgrade": "Agrandir : niveau %s (%s blocs) pour %s quartz",
-  "screen.doublejump.lodestone.max": "Niveau maximum atteint"
+  "screen.doublejump.lodestone.max": "Niveau maximum atteint",
+  "screen.doublejump.map.hint3": "Clic gauche sur une Magnétite : se téléporter",
+  "screen.doublejump.teleport": "Téléportation vers la Magnétite",
+  "screen.doublejump.teleport.go": "Se téléporter",
+  "screen.doublejump.teleport.not_in_zone": "Tu dois être dans une zone de sécurité pour te téléporter",
+  "message.doublejump.teleport.not_in_zone": "Tu dois être dans une zone de sécurité pour te téléporter.",
+  "message.doublejump.teleport.no_space": "Pas de place libre à côté de cette Magnétite."
 }

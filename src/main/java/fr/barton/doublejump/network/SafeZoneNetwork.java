@@ -64,6 +64,18 @@ public final class SafeZoneNetwork {
 		}
 	}
 
+	/** Client vers serveur : se téléporter à côté de cette Magnétite (demandé depuis la carte). */
+	public record TeleportPayload(BlockPos pos) implements CustomPacketPayload {
+		public static final Type<TeleportPayload> TYPE = new Type<>(DoubleJump.id("teleport"));
+		public static final StreamCodec<ByteBuf, TeleportPayload> CODEC = BlockPos.STREAM_CODEC
+				.map(TeleportPayload::new, TeleportPayload::pos);
+
+		@Override
+		public Type<TeleportPayload> type() {
+			return TYPE;
+		}
+	}
+
 	private SafeZoneNetwork() {
 	}
 
@@ -73,12 +85,15 @@ public final class SafeZoneNetwork {
 		PayloadTypeRegistry.clientboundPlay().register(SyncPayload.TYPE, SyncPayload.CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(LinkCompassPayload.TYPE, LinkCompassPayload.CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(UpgradeZonePayload.TYPE, UpgradeZonePayload.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(TeleportPayload.TYPE, TeleportPayload.CODEC);
 
 		// 2. Ce que fait le serveur quand il reçoit une demande d'un joueur
 		ServerPlayNetworking.registerGlobalReceiver(LinkCompassPayload.TYPE,
 				(payload, context) -> SafeZoneActions.linkCompass(context.player(), payload.pos()));
 		ServerPlayNetworking.registerGlobalReceiver(UpgradeZonePayload.TYPE,
 				(payload, context) -> SafeZoneActions.upgrade(context.player(), payload.pos(), payload.expectedLevel()));
+		ServerPlayNetworking.registerGlobalReceiver(TeleportPayload.TYPE,
+				(payload, context) -> SafeZoneActions.teleport(context.player(), payload.pos()));
 
 		// 3. Le joueur reçoit les zones quand il arrive, change de dimension ou réapparaît
 		ServerPlayConnectionEvents.JOIN.register((listener, sender, server) -> sendTo(listener.player));

@@ -37,4 +37,14 @@ public final class ClientSafeZones {
 	public static SafeZone get(BlockPos pos) {
 		return ZONES.get(pos);
 	}
+
+	/** Indique si ce bloc se trouve dans au moins une zone (même règle que le serveur). */
+	public static boolean isProtected(BlockPos pos) {
+		for (SafeZone zone : ZONES.values()) {
+			if (zone.contains(pos)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

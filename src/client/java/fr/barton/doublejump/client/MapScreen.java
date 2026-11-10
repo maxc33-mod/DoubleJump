@@ -123,7 +123,7 @@ public class MapScreen extends Screen {
         return true;
     }
 
-    // Clic droit : créer ou modifier un waypoint
+    // Clic gauche sur une Magnétite : téléportation. Clic droit : créer ou modifier un waypoint
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         // On laisse d'abord les boutons (Me recentrer) réagir
@@ -132,11 +132,36 @@ public class MapScreen extends Screen {
             return true;
         }
 
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
+            SafeZone zone = findLodestoneAt(event.x(), event.y());
+            if (zone != null) {
+                this.minecraft.gui.setScreen(new TeleportScreen(this, zone));
+                return true;
+            }
+        }
+
         if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT) {
             openWaypointEditor(event.x(), event.y());
             return true;
         }
         return false;
+    }
+
+    // Magnétite dont l'icône est sous la souris (la plus proche), ou null
+    private SafeZone findLodestoneAt(double mouseX, double mouseY) {
+        SafeZone best = null;
+        double bestDistance = Double.MAX_VALUE;
+
+        for (SafeZone zone : ClientSafeZones.zones()) {
+            double dx = Math.abs(mouseX - screenX(zone.pos().getX() + 0.5));
+            double dy = Math.abs(mouseY - screenY(zone.pos().getZ() + 0.5));
+            // L'icône est un carré de 16 pixels centré sur la Magnétite
+            if (dx <= ICON_HALF_SIZE && dy <= ICON_HALF_SIZE && dx + dy < bestDistance) {
+                best = zone;
+                bestDistance = dx + dy;
+            }
+        }
+        return best;
     }
 
     private void openWaypointEditor(double mouseX, double mouseY) {
@@ -362,7 +387,7 @@ public class MapScreen extends Screen {
         // Zoom affiché proprement : "4" ou "0.5" plutôt que "4.0"
         String zoomText = scale >= 1 ? String.valueOf((int) scale) : String.valueOf(scale);
 
-        graphics.fill(8, 8, 290, 96, 0xA0000000); // fond semi-transparent
+        graphics.fill(8, 8, 290, 108, 0xA0000000); // fond semi-transparent
 
         graphics.text(this.font,
                 Component.translatable("screen.doublejump.map.dimension",
@@ -389,5 +414,8 @@ public class MapScreen extends Screen {
         graphics.text(this.font,
                 Component.translatable("screen.doublejump.map.hint2").getString(),
                 14, 84, 0xFFAAAAAA, true);
+        graphics.text(this.font,
+                Component.translatable("screen.doublejump.map.hint3").getString(),
+                14, 96, 0xFFAAAAAA, true);
     }
 }
